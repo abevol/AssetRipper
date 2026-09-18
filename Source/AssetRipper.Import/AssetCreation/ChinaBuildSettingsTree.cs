@@ -1,4 +1,5 @@
 using AssetRipper.Assets.Metadata;
+using AssetRipper.Import.Structure.Assembly.Serializable;
 using AssetRipper.Import.Structure.Assembly.TypeTrees;
 using AssetRipper.IO.Files.SerializedFiles;
 using AssetRipper.Primitives;
@@ -24,7 +25,7 @@ internal static class ChinaBuildSettingsTree
 	{
 		if (TypeTreeNodeStruct.TryMakeFromTpk(ClassIDType.BuildSettings, BaseLayoutVersion, out TypeTreeNodeStruct releaseRoot, out TypeTreeNodeStruct editorRoot))
 		{
-			return TypeTreeObject.Create(assetInfo, InsertExtraStringField(releaseRoot), InsertExtraStringField(editorRoot));
+			return TypeTreeObject.Create(assetInfo, InsertExtraStringField(releaseRoot), InsertExtraStringField(editorRoot), ITypeResolver.Null);
 		}
 		else
 		{

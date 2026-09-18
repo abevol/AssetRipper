@@ -5,6 +5,7 @@ using AssetRipper.Import.AssetCreation;
 using AssetRipper.Import.Structure.Assembly.Managers;
 using AssetRipper.IO.Files;
 using AssetRipper.IO.Files.SerializedFiles;
+using AssetRipper.IO.Files.SerializedFiles.Parser;
 using AssetRipper.Primitives;
 using AssetRipper.Processing.Scenes;
 using AssetRipper.SourceGenerated.Classes.ClassID_141;
@@ -30,7 +31,7 @@ internal class ChinaVersionTests
 		ProcessedAssetCollection collection = CreateChinaCollection();
 		GameAssetFactory factory = new(new BaseManager(_ => { }));
 
-		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 141), Convert.FromHexString(BuildSettingsHex), null);
+		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 141), Convert.FromHexString(BuildSettingsHex), null, Array.Empty<SerializedTypeReference>());
 
 		Assert.That(asset, Is.InstanceOf<BuildSettings_2022_3_52>());
 		BuildSettings_2022_3_52 buildSettings = (BuildSettings_2022_3_52)asset!;
@@ -47,7 +48,7 @@ internal class ChinaVersionTests
 		ProcessedAssetCollection collection = CreateChinaCollection(China2022_3_62);
 		GameAssetFactory factory = new(new BaseManager(_ => { }));
 
-		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 141), Convert.FromHexString(BuildSettings62Hex), null);
+		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 141), Convert.FromHexString(BuildSettings62Hex), null, Array.Empty<SerializedTypeReference>());
 
 		Assert.That(asset, Is.InstanceOf<TypeTreeObject>());
 		TypeTreeObject typeTree = (TypeTreeObject)asset!;
@@ -63,11 +64,11 @@ internal class ChinaVersionTests
 	{
 		GameAssetFactory factory = new(new BaseManager(_ => { }));
 
-		IUnityObjectBase typedAsset = factory.ReadAsset(new AssetInfo(CreateChinaCollection(China2022_3_20), 1, 141), Convert.FromHexString(BuildSettingsHex), null);
+		IUnityObjectBase typedAsset = factory.ReadAsset(new AssetInfo(CreateChinaCollection(China2022_3_20), 1, 141), Convert.FromHexString(BuildSettingsHex), null, Array.Empty<SerializedTypeReference>());
 		Assert.That(SceneHelpers.TryGetScenes(typedAsset, out IReadOnlyList<Utf8String>? typedScenes), Is.True);
 		Assert.That(typedScenes.Select(scene => scene.String), Is.EqualTo(new[] { "Assets/Scenes/VillageScene.unity", "Assets/Scenes/GameScene.unity", "Assets/Scenes/LoadingScene.unity" }));
 
-		IUnityObjectBase treeAsset = factory.ReadAsset(new AssetInfo(CreateChinaCollection(China2022_3_62), 1, 141), Convert.FromHexString(BuildSettings62Hex), null);
+		IUnityObjectBase treeAsset = factory.ReadAsset(new AssetInfo(CreateChinaCollection(China2022_3_62), 1, 141), Convert.FromHexString(BuildSettings62Hex), null, Array.Empty<SerializedTypeReference>());
 		Assert.That(SceneHelpers.TryGetScenes(treeAsset, out IReadOnlyList<Utf8String>? treeScenes), Is.True);
 		Assert.That(treeScenes.Select(scene => scene.String), Is.EqualTo(new[] { "Assets/Scenes/Main.unity", "Assets/Altar/DarkEmpireScene.unity" }));
 	}
@@ -78,7 +79,7 @@ internal class ChinaVersionTests
 		ProcessedAssetCollection collection = CreateChinaCollection();
 		GameAssetFactory factory = new(new BaseManager(_ => { }));
 
-		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 310), Convert.FromHexString(UnityConnectSettingsHex), null);
+		IUnityObjectBase asset = factory.ReadAsset(new AssetInfo(collection, 1, 310), Convert.FromHexString(UnityConnectSettingsHex), null, Array.Empty<SerializedTypeReference>());
 
 		Assert.That(asset, Is.InstanceOf<TypeTreeObject>());
 		TypeTreeObject typeTree = (TypeTreeObject)asset!;

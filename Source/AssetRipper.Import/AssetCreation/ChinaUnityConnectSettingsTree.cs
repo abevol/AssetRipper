@@ -1,4 +1,5 @@
 using AssetRipper.Assets.Metadata;
+using AssetRipper.Import.Structure.Assembly.Serializable;
 using AssetRipper.Import.Structure.Assembly.TypeTrees;
 using AssetRipper.IO.Files.SerializedFiles;
 using AssetRipper.Primitives;
@@ -27,7 +28,7 @@ internal static class ChinaUnityConnectSettingsTree
 	{
 		if (TypeTreeNodeStruct.TryMakeFromTpk(ClassIDType.UnityConnectSettings, BaseLayoutVersion, out TypeTreeNodeStruct releaseRoot, out TypeTreeNodeStruct editorRoot))
 		{
-			return TypeTreeObject.Create(assetInfo, InsertChinaUrlFields(releaseRoot), InsertChinaUrlFields(editorRoot));
+			return TypeTreeObject.Create(assetInfo, InsertChinaUrlFields(releaseRoot), InsertChinaUrlFields(editorRoot), ITypeResolver.Null);
 		}
 		else
 		{
