@@ -5,7 +5,6 @@ using AssetRipper.Assets.Generics;
 using AssetRipper.Import.Logging;
 using AssetRipper.IO.Files;
 using AssetRipper.SourceGenerated.Classes.ClassID_1045;
-using AssetRipper.SourceGenerated.Classes.ClassID_141;
 using AssetRipper.SourceGenerated.Classes.ClassID_142;
 using AssetRipper.SourceGenerated.Classes.ClassID_29;
 using AssetRipper.SourceGenerated.Classes.ClassID_3;
@@ -21,7 +20,7 @@ public sealed class SceneDefinitionProcessor : IAssetProcessor
 	public void Process(GameData gameData)
 	{
 		Logger.Info(LogCategory.Processing, "Creating Scene Definitions");
-		IBuildSettings? buildSettings = null;
+		IReadOnlyList<Utf8String>? scenes = null;
 		HashSet<AssetCollection> sceneCollections = new();
 		Dictionary<AssetCollection, string> scenePaths = new();
 		Dictionary<AssetCollection, UnityGuid> sceneGuids = new();
@@ -40,9 +39,9 @@ public sealed class SceneDefinitionProcessor : IAssetProcessor
 						sceneGuids[collection] = sceneSettings.SceneGUID;
 					}
 				}
-				else if (asset is IBuildSettings buildSettings1)
+				else if (SceneHelpers.TryGetScenes(asset, out IReadOnlyList<Utf8String>? foundScenes))
 				{
-					buildSettings = buildSettings1;
+					scenes = foundScenes;
 				}
 				else if (asset is IAssetBundle assetBundle && assetBundle.IsStreamedSceneAssetBundle)
 				{
@@ -54,7 +53,7 @@ public sealed class SceneDefinitionProcessor : IAssetProcessor
 		//Currently, these paths are treated as lower precedent than paths defined in asset bundles, but they should never conflict.
 		foreach (AssetCollection sceneCollection in sceneCollections)
 		{
-			if (SceneHelpers.TryGetScenePath(sceneCollection, buildSettings, out string? scenePath))
+			if (SceneHelpers.TryGetScenePath(sceneCollection, scenes, out string? scenePath))
 			{
 				scenePaths[sceneCollection] = scenePath;
 			}
@@ -129,17 +128,17 @@ public sealed class SceneDefinitionProcessor : IAssetProcessor
 		{
 			ProcessedAssetCollection processedCollection = gameData.AddNewProcessedCollection("Generated Settings");
 
-			if (buildSettings is not null)
+			if (scenes is not null)
 			{
 				IEditorBuildSettings editorBuildSettings = processedCollection.CreateEditorBuildSettings();
 				{
-					int numScenes = buildSettings.Scenes.Count;
+					int numScenes = scenes.Count;
 					editorBuildSettings.Scenes.Capacity = numScenes;
 					for (int i = 0; i < numScenes; i++)
 					{
 						IScene scene = editorBuildSettings.Scenes.AddNew();
 						scene.Enabled = true;
-						scene.Path = buildSettings.Scenes[i];
+						scene.Path = scenes[i];
 						//Guid gets handled later.
 					}
 				}

@@ -3,7 +3,6 @@ using AssetRipper.Assets.Collections;
 using AssetRipper.Export.UnityProjects.Project;
 using AssetRipper.Import.Configuration;
 using AssetRipper.Processing.Scenes;
-using AssetRipper.SourceGenerated.Classes.ClassID_141;
 using System.Diagnostics;
 
 
@@ -19,7 +18,15 @@ public class ProjectAssetContainer : IExportContainer
 
 		ExportVersion = options.Version;
 
-		m_buildSettings = assets.OfType<IBuildSettings>().FirstOrDefault();
+		IReadOnlyList<Utf8String>? buildScenes = null;
+		foreach (IUnityObjectBase asset in assets)
+		{
+			if (SceneHelpers.TryGetScenes(asset, out IReadOnlyList<Utf8String>? foundScenes))
+			{
+				buildScenes = foundScenes;
+			}
+		}
+		m_buildScenes = buildScenes;
 
 		List<SceneExportCollection> scenes = new();
 		foreach (IExportCollection collection in collections)
@@ -83,7 +90,7 @@ public class ProjectAssetContainer : IExportContainer
 		return default;
 	}
 
-	public bool IsSceneDuplicate(int sceneIndex) => SceneHelpers.IsSceneDuplicate(sceneIndex, m_buildSettings);
+	public bool IsSceneDuplicate(int sceneIndex) => SceneHelpers.IsSceneDuplicate(sceneIndex, m_buildScenes);
 
 	public IExportCollection CurrentCollection { get; set; }
 	public AssetCollection File => CurrentCollection.File;
@@ -92,6 +99,6 @@ public class ProjectAssetContainer : IExportContainer
 	private readonly ProjectExporter m_exporter;
 	private readonly Dictionary<IUnityObjectBase, IExportCollection> m_assetCollections = new();
 
-	private readonly IBuildSettings? m_buildSettings;
+	private readonly IReadOnlyList<Utf8String>? m_buildScenes;
 	private readonly SceneExportCollection[] m_scenes;
 }

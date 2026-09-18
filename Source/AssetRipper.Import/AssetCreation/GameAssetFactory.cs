@@ -173,6 +173,25 @@ public sealed class GameAssetFactory : AssetFactoryBase
 		{
 			error = MakeError_ReadException(asset, ex);
 		}
+		if (error is not null && version.Type == UnityVersionType.China && version.Major == 2022 && assetInfo.ClassID == (int)ClassIDType.BuildSettings)
+		{
+			//Newer Chinese Unity builds (eg 2022.3.62f1c1) have an extra string field in BuildSettings
+			//that older Chinese builds (eg 2022.3.20f1c1) lack. Retry with the extended layout.
+			try
+			{
+				IUnityObjectBase alternateAsset = ChinaBuildSettingsTree.Create(assetInfo);
+				EndianSpanReader alternateReader = new EndianSpanReader(assetData, alternateAsset.Collection.EndianType);
+				alternateAsset.Read(ref alternateReader);
+				if (alternateReader.Position == alternateReader.Length)
+				{
+					error = null;
+					return alternateAsset;
+				}
+			}
+			catch
+			{
+			}
+		}
 		return asset;
 
 		static bool IsAllZero(ReadOnlySpan<byte> span)

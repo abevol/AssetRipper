@@ -1,5 +1,7 @@
 ﻿using AssetRipper.Assets;
 using AssetRipper.Assets.Collections;
+using AssetRipper.Import.AssetCreation;
+using AssetRipper.SourceGenerated;
 using AssetRipper.SourceGenerated.Classes.ClassID_1;
 using AssetRipper.SourceGenerated.Classes.ClassID_1001;
 using AssetRipper.SourceGenerated.Classes.ClassID_114;
@@ -81,11 +83,11 @@ public static partial class SceneHelpers
 		return $"{LevelName}{index}";
 	}
 
-	public static bool TryGetScenePath(AssetCollection collection, [NotNullWhen(true)] IBuildSettings? buildSettings, [NotNullWhen(true)] out string? result)
+	public static bool TryGetScenePath(AssetCollection collection, [NotNullWhen(true)] IReadOnlyList<Utf8String>? scenes, [NotNullWhen(true)] out string? result)
 	{
-		if (buildSettings is not null && TryGetFileNameToSceneIndex(collection.Name, collection.OriginalVersion, out int index))
+		if (scenes is not null && TryGetFileNameToSceneIndex(collection.Name, collection.OriginalVersion, out int index))
 		{
-			if (index >= buildSettings.Scenes.Count)
+			if (index >= scenes.Count)
 			{
 				//This can happen in the following situation:
 				//1. A game is built with N scenes and published to a distribution platform.
@@ -96,7 +98,7 @@ public static partial class SceneHelpers
 				result = null;
 				return false;
 			}
-			string scenePath = buildSettings.Scenes[index].String;
+			string scenePath = scenes[index].String;
 			string extension = Path.GetExtension(scenePath);
 			if (scenePath.StartsWith(AssetsName, StringComparison.Ordinal))
 			{
@@ -141,17 +143,17 @@ public static partial class SceneHelpers
 		return false;
 	}
 
-	public static bool IsSceneDuplicate(int sceneIndex, IBuildSettings? buildSettings)
+	public static bool IsSceneDuplicate(int sceneIndex, IReadOnlyList<Utf8String>? scenes)
 	{
-		if (buildSettings == null)
+		if (scenes == null)
 		{
 			return false;
 		}
 
-		string sceneName = buildSettings.Scenes[sceneIndex].String;
-		for (int i = 0; i < buildSettings.Scenes.Count; i++)
+		string sceneName = scenes[sceneIndex].String;
+		for (int i = 0; i < scenes.Count; i++)
 		{
-			if (buildSettings.Scenes[i] == sceneName)
+			if (scenes[i] == sceneName)
 			{
 				if (i != sceneIndex)
 				{
@@ -160,6 +162,29 @@ public static partial class SceneHelpers
 			}
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// Gets the scene list from a BuildSettings asset, whether it is a generated class
+	/// or a <see cref="TypeTreeObject"/> fallback for layouts without a generated class.
+	/// </summary>
+	public static bool TryGetScenes(IUnityObjectBase asset, [NotNullWhen(true)] out IReadOnlyList<Utf8String>? scenes)
+	{
+		if (asset is IBuildSettings buildSettings)
+		{
+			scenes = buildSettings.Scenes;
+			return true;
+		}
+		else if (asset is TypeTreeObject tree && tree.ClassID == (int)ClassIDType.BuildSettings && tree.ReleaseFields.ContainsField("scenes"))
+		{
+			scenes = tree.ReleaseFields["scenes"].AsStringArray.Select(scene => new Utf8String(scene)).ToArray();
+			return true;
+		}
+		else
+		{
+			scenes = null;
+			return false;
+		}
 	}
 
 	[GeneratedRegex("^level(0|([1-9][0-9]*))$")]
